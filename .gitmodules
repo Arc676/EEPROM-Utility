@@ -1,3 +1,6 @@
 [submodule "Programmer/imgui"]
 	path = Programmer/imgui
 	url = git@github.com:ocornut/imgui.git
+[submodule "Programmer/Serial-Interface"]
+	path = Programmer/Serial-Interface
+	url = git@github.com:Arc676/Serial-Interface.git
