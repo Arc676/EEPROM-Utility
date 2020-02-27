@@ -8,13 +8,13 @@ Toolkit for reading from and writing to EEPROM chips using an Arduino. Designed 
 
 The Arduino microcontroller serves as the interface between the computer and the EEPROM chip. It receives commands via the serial connection and either reads from the serial connection and writes to the EEPROM chip or vice versa. Data reading and writing is sequential and starts at address 0.
 
-### Interfacing Library
+### Interfacing
 
-The interfacing library acts as an abstraction layer for the serial communication protocol.
+There are two interfacing components included in this project. The graphical frontend depends on the [Serial Interface](https://github.com/Arc676/Serial-Interface) library (GPLv3). This is included as a submodule in the repository. In addition, the header file `Programmer/src/interface.h` defines the communication protocol between the microcontroller and the frontend.
 
 ### EEPROM Programmer
 
-The graphical frontend uses [ImGui](https://github.com/ocornut/imgui) (MIT licensed) and allows the user to view the data on the EEPROM chip as well as modify it.
+The graphical frontend uses [ImGui](https://github.com/ocornut/imgui) (MIT licensed) and allows the user to view the data on the EEPROM chip as well as modify it. The memory visualizer is also MIT licensed and available under [ImGui Club](https://github.com/ocornut/imgui_club).
 
 ## License
 

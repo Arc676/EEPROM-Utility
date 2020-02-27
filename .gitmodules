@@ -4,3 +4,6 @@
 [submodule "Programmer/Serial-Interface"]
 	path = Programmer/Serial-Interface
 	url = git@github.com:Arc676/Serial-Interface.git
+[submodule "Programmer/imgui_club"]
+	path = Programmer/imgui_club
+	url = git@github.com:ocornut/imgui_club.git

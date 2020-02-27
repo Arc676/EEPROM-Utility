@@ -3,7 +3,7 @@ SDIR=src
 BDIR=bin
 
 CC=g++
-FLAGS=-std=c++11 -I imgui -I imgui/examples -I Serial-Interface/src
+FLAGS=-std=c++11 -I imgui -I imgui/examples -I Serial-Interface/src -I imgui_club/imgui_memory_editor
 LIB=-L Serial-Interface -l serialcomm -lm -l glfw -l GLEW
 
 ifdef MAC

@@ -1,16 +1,28 @@
+// Copyright (C) 2020 Arc676/Alessandro Vinciguerra
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation (version 3)
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+// See README and LICENSE for more details.
+
 #include "programmer.h"
 
-int connected = 0;
+bool connected = false;
 char device[200];
 SerialConnection* sc;
 
-int bytesSent = 0, bytesRead = 0;
-int bytesToRead = 0;
-char sendData[200], readData[200];
+unsigned char* data;
+int bufferSize = 0;
 
-typedef enum SendState {
-	SENT, SEND_FAILED, WAITING
-} SendState;
+MemoryEditor memEdit;
 
 void glfwErrorCallback(int error, const char* description) {
 	fprintf(stderr, "GLFW error %d: %s\n", error, description);
@@ -36,7 +48,7 @@ int main() {
 
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-	GLFWwindow* window = glfwCreateWindow(500, 500, "EEPROM Programmer", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(700, 600, "EEPROM Programmer", NULL, NULL);
 	if (!window) {
 		return 1;
 	}
@@ -46,10 +58,6 @@ int main() {
 		fprintf(stderr, "Failed to initialize OpenGL loader\n");
 		return 1;
 	}
-
-	memset(device, 0, 200);
-	memset(sendData, 0, 200);
-	memset(readData, 0, 200);
 
 	sc = initSerialConnection();
 
@@ -66,16 +74,14 @@ int main() {
 		ImGui::NewFrame();
 
 		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowSize(ImVec2(500, 500), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(700, 600), ImGuiCond_FirstUseEver);
 
 		if (ImGui::Begin("EEPROM Programmer")) {
 			if (ImGui::CollapsingHeader("Connection")) {
 				ImGui::Text("Device Path");
 				ImGui::SameLine();
-				ImGuiInputTextFlags flags = 0;
-				if (connected) {
-					flags = ImGuiInputTextFlags_ReadOnly;
-				}
+				ImGuiInputTextFlags flags = connected ? ImGuiInputTextFlags_ReadOnly : 0;
+
 				ImGui::InputText("##Device", device, 200, flags);
 				ImGui::Text("Baud rate");
 				ImGui::SameLine();
@@ -85,11 +91,67 @@ int main() {
 					connected = setupSerial(sc, device);
 				} else if (connected && ImGui::Button("Disconnect")) {
 					disconnectSerialConnection(sc);
-					connected = 0;
+					connected = false;
 				}
 			}
 
 			if (connected) {
+				if (ImGui::CollapsingHeader("Buffer")) {
+					static int newSize = 0;
+					ImGui::Text("Buffer Size");
+					ImGui::SameLine();
+					ImGui::InputInt("##BufSize", &newSize);
+					if (ImGui::Button("Allocate")) {
+						bufferSize = newSize;
+						data = (unsigned char*)realloc(data, bufferSize);
+					}
+				}
+				if (data && ImGui::CollapsingHeader("Chip Contents")) {
+					memEdit.DrawContents(data, bufferSize);
+					ImGui::SetCursorPosX(0);
+					if (ImGui::TreeNode("Data Presets")) {
+						static int address = 0;
+						ImGui::Text("Starting Address");
+						ImGui::SameLine();
+						ImGui::InputInt("##Address", &address);
+						if (address >= 0) {
+							if (ImGui::Button("7 Segment Decoder (0-F)")) {
+							} else if (ImGui::Button("7 Segment Decoder (0-9)")) {
+							}
+						} else {
+							ImGui::Text("(Can't write to given address)");
+						}
+						ImGui::TreePop();
+					}
+				}
+				if (ImGui::CollapsingHeader("Data Transfer")) {
+					static int len = 0, offset = 0;
+					ImGui::Text("Buffer Length");
+					ImGui::SameLine();
+					ImGui::InputInt("##BufLen", &len);
+
+					ImGui::Text("Offset");
+					ImGui::SameLine();
+					ImGui::InputInt("##Offset", &offset);
+
+					ImGui::Separator();
+					if (0 < len && len + offset <= bufferSize && offset >= 0) {
+						static int transferred = 0;
+						if (ImGui::Button("Write Buffer to Chip")) {
+							transferred = writeEEPROM(sc, data, len, offset);
+						}
+						ImGui::Separator();
+						static int keepStart = 1;
+						ImGui::RadioButton("Keep data preceding the offset", &keepStart, 1);
+						ImGui::RadioButton("Overwrite entire buffer with data starting from this offset", &keepStart, 0);
+						if (ImGui::Button("Read Buffer from Chip")) {
+							transferred = readEEPROM(sc, keepStart ? data + offset : data, len, offset);
+						}
+						ImGui::Text("Bytes transferred during last operation: %d", transferred);
+					} else {
+						ImGui::Text("(Cannot transfer data with current length or offset. Maybe enlarge the buffer?)");
+					}
+				}
 			}
 
 			if (ImGui::Button("Exit")) {
@@ -115,6 +177,9 @@ int main() {
 
 	if (connected) {
 		destroySerialConnection(sc);
+	}
+	if (data) {
+		free(data);
 	}
 
 	return 0;
