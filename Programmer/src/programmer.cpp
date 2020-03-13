@@ -117,6 +117,8 @@ int main() {
 						if (address >= 0) {
 							if (ImGui::Button("7 Segment Decoder (0-F)")) {
 							} else if (ImGui::Button("7 Segment Decoder (0-9)")) {
+							} else if (ImGui::Button("Erase EEPROM (fill buffer with zeros)")) {
+								memset(buffer, 0, bufferSize);
 							}
 						} else {
 							ImGui::Text("(Can't write to given address)");
@@ -137,13 +139,13 @@ int main() {
 					ImGui::Separator();
 					if (0 < len && len + offset <= bufferSize && offset >= 0) {
 						static int transferred = 0;
-						if (ImGui::Button("Write Buffer to Chip")) {
-							transferred = writeEEPROM(sc, data, len, offset);
-						}
-						ImGui::Separator();
 						static int keepStart = 1;
-						ImGui::RadioButton("Keep data preceding the offset", &keepStart, 1);
-						ImGui::RadioButton("Overwrite entire buffer with data starting from this offset", &keepStart, 0);
+						ImGui::RadioButton("Maintain alignment of local buffer with EEPROM data", &keepStart, 1);
+						ImGui::RadioButton("Transfer data to/from beginning of local buffer regardless of offset", &keepStart, 0);
+
+						if (ImGui::Button("Write Buffer to Chip")) {
+							transferred = writeEEPROM(sc, keepStart ? data + offset : data, len, offset);
+						}
 						if (ImGui::Button("Read Buffer from Chip")) {
 							transferred = readEEPROM(sc, keepStart ? data + offset : data, len, offset);
 						}
