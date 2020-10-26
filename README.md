@@ -1,6 +1,6 @@
 # EEPROM Utility
 
-Toolkit for reading from and writing to EEPROM chips using an Arduino. Designed for Arduino Nano and AT27C256 EEPROM.
+Toolkit for reading from and writing to EEPROM chips using an Arduino. Designed for Arduino Nano and the AT27C256R EPROM and AT28C64B EEPROM microchips.
 
 ## Components
 
@@ -15,6 +15,10 @@ There are two interfacing components included in this project. The graphical fro
 ### EEPROM Programmer
 
 The graphical frontend uses [ImGui](https://github.com/ocornut/imgui) (MIT licensed) and allows the user to view the data on the EEPROM chip as well as modify it. The memory visualizer is also MIT licensed and available under [ImGui Club](https://github.com/ocornut/imgui_club).
+
+#### Chip Presets
+
+The EEPROM Programmer also offers some preset data for common PROM uses. Pin configuration diagrams and descriptions of the preset data can be found in `Programmer/Presets`.
 
 ## License
 

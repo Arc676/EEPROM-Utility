@@ -39,7 +39,7 @@ size_t readEEPROM(SerialConnection* conn, unsigned char* buf, size_t len, size_t
 	memcpy(cmd + 1, &len, sizeof(size_t));
 	memcpy(cmd + 1 + sizeof(size_t), &offset, sizeof(size_t));
 	writeSerial(conn, cmd, CMDSIZE);
-	return writeSerial(conn, buf, len);
+	return readSerial(conn, buf, len);
 }
 
 /**
@@ -56,7 +56,7 @@ size_t writeEEPROM(SerialConnection* conn, unsigned char* buf, size_t len, size_
 	memcpy(cmd + 1, &len, sizeof(size_t));
 	memcpy(cmd + 1 + sizeof(size_t), &offset, sizeof(size_t));
 	writeSerial(conn, cmd, CMDSIZE);
-	return readSerial(conn, buf, len);
+	return writeSerial(conn, buf, len);
 }
 
 #endif

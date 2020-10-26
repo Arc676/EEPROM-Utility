@@ -118,7 +118,7 @@ int main() {
 							if (ImGui::Button("7 Segment Decoder (0-F)")) {
 							} else if (ImGui::Button("7 Segment Decoder (0-9)")) {
 							} else if (ImGui::Button("Erase EEPROM (fill buffer with zeros)")) {
-								memset(buffer, 0, bufferSize);
+								memset(data, 0, bufferSize);
 							}
 						} else {
 							ImGui::Text("(Can't write to given address)");
