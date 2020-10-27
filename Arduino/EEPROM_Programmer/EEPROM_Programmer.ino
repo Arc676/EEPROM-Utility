@@ -1,8 +1,8 @@
 #define READ 0x00
 #define WRITE 0xFF
 
-#define ADDRESS_CLK 3
 #define ADDRESS_SER 2
+#define ADDRESS_CLK 3
 #define ADDRESS_LATCH 4
 
 #define WRITE_ENABLE 12
@@ -12,7 +12,7 @@
 
 #include <stddef.h>
 
-const int dataPins[] = {A0, A1, A2, A3, A4, A5, A6, A7};
+const int dataPins[] = {A0, A1, A2, A3, A4, A5, 6, 7};
 bool outputMode = false;
 
 void setup() {
@@ -22,25 +22,16 @@ void setup() {
 	pinMode(ADDRESS_SER, OUTPUT);
 	pinMode(ADDRESS_LATCH, OUTPUT);
 
+	digitalWrite(ADDRESS_LATCH, LOW);
+	digitalWrite(WRITE_ENABLE, HIGH);
+
+	pinMode(WRITE_ENABLE, OUTPUT);
+
 	pinMode(WRITE_STATUS, OUTPUT);
 	pinMode(READ_STATUS, OUTPUT);
 
 	for (int i = 0; i < 8; i++) {
 		pinMode(dataPins[i], INPUT);
-	}
-
-	Serial.println("DEBUG: Reading EEPROM state");
-	byte data[1024];
-	readEEPROM(data, 1024, 0);
-	char buf[80];
-	for (int i = 0; i <= 1024; i++) {
-		if (i % 16 == 0) {
-			sprintf(buf, "%03x:\t", i);
-		}
-		sprintf(buf, "%s%02x ", buf, data[i]);
-		if (i % 16 == 15 || i + 1 >= 1024) {
-			Serial.println(buf);
-		}
 	}
 }
 
@@ -64,12 +55,15 @@ void writeEEPROM(byte* data, size_t length, size_t offset) {
 
 	for (int address = (int)offset; address < (int)(offset + length); address++) {
 		setAddress(address, false);
+		byte b = data[address - offset];
 		for (int i = 0; i < 8; i++) {
-			digitalWrite(dataPins[i], (data[address] >> i) & 1);
+			digitalWrite(dataPins[i], b & 1);
+			b >>= 1;
 		}
 		digitalWrite(WRITE_ENABLE, LOW);
 		delayMicroseconds(1);
 		digitalWrite(WRITE_ENABLE, HIGH);
+		delay(10);
 	}
 
 	digitalWrite(WRITE_STATUS, LOW);
@@ -86,12 +80,12 @@ void readEEPROM(byte* dst, size_t length, size_t offset) {
 	}
 
 	for (int address = (int)offset; address < (int)(offset + length); address++) {
-		setAddress(address, false);
+		setAddress(address, true);
 		byte data = 0;
-		for (int i = 0; i < 8; i++) {
+		for (int i = 7; i >= 0; i--) {
 			data = (data << 1) | digitalRead(dataPins[i]);
 		}
-		dst[address] = data;
+		dst[address - offset] = data;
 	}
 
 	digitalWrite(READ_STATUS, LOW);
@@ -104,7 +98,7 @@ void loop() {
 		Serial.readBytes(&command, 1);
 		Serial.readBytes((byte*)&length, sizeof(size_t));
 		Serial.readBytes((byte*)&offset, sizeof(size_t));
-		byte* data = malloc(length);
+		byte* data = (byte*)malloc(length);
 		if (command == READ) {
 			readEEPROM(data, length, offset);
 			Serial.write(data, length);
