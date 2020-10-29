@@ -34,11 +34,10 @@
  * @return Number of bytes received from serial port
  */
 size_t readEEPROM(SerialConnection* conn, unsigned char* buf, uint32_t len, uint32_t offset) {
-	unsigned char cmd[CMDSIZE];
-	cmd[0] = READ;
-	memcpy(cmd + 1, &len, sizeof(uint32_t));
-	memcpy(cmd + 1 + sizeof(uint32_t), &offset, sizeof(uint32_t));
-	writeSerial(conn, cmd, CMDSIZE);
+	unsigned char cmd = READ;
+	writeSerial(conn, &cmd, 1);
+	writeSerial(conn, (unsigned char*)&len, sizeof(uint32_t));
+	writeSerial(conn, (unsigned char*)&offset, sizeof(uint32_t));
 	size_t read = 0;
 	while (read < len) {
 		read += readSerial(conn, buf + read, len - read);
@@ -55,11 +54,10 @@ size_t readEEPROM(SerialConnection* conn, unsigned char* buf, uint32_t len, uint
  * @return Number of bytes written to serial port
  */
 size_t writeEEPROM(SerialConnection* conn, unsigned char* buf, uint32_t len, uint32_t offset) {
-	unsigned char cmd[CMDSIZE];
-	cmd[0] = WRITE;
-	memcpy(cmd + 1, &len, sizeof(uint32_t));
-	memcpy(cmd + 1 + sizeof(uint32_t), &offset, sizeof(uint32_t));
-	writeSerial(conn, cmd, CMDSIZE);
+	unsigned char cmd = WRITE;
+	writeSerial(conn, &cmd, 1);
+	writeSerial(conn, (unsigned char*)&len, sizeof(uint32_t));
+	writeSerial(conn, (unsigned char*)&offset, sizeof(uint32_t));
 	return writeSerial(conn, buf, len);
 }
 

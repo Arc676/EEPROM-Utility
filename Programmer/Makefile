@@ -25,6 +25,8 @@ endif
 OBJS=programmer.cpp
 _OBJS=$(patsubst %.cpp, $(ODIR)/%.o, $(OBJS))
 
+HEADERS=$(SDIR)/programmer.h $(SDIR)/interface.h
+
 IMGUI_SRC=imgui.cpp imgui_draw.cpp imgui_widgets.cpp examples/imgui_impl_glfw.cpp examples/imgui_impl_opengl3.cpp
 IMGUI_OBJ=$(patsubst %.cpp, $(ODIR)/%.o, $(patsubst examples/%, %, $(IMGUI_SRC)))
 
@@ -44,7 +46,7 @@ makedir:
 	mkdir -p $(ODIR)
 	mkdir -p $(BDIR)
 
-$(ODIR)/%.o: $(SDIR)/%.cpp
+$(ODIR)/%.o: $(SDIR)/%.cpp $(HEADERS)
 	$(CC) -c $(FLAGS) -o $@ $<
 
 clean:
