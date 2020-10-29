@@ -39,7 +39,11 @@ size_t readEEPROM(SerialConnection* conn, unsigned char* buf, uint32_t len, uint
 	memcpy(cmd + 1, &len, sizeof(uint32_t));
 	memcpy(cmd + 1 + sizeof(uint32_t), &offset, sizeof(uint32_t));
 	writeSerial(conn, cmd, CMDSIZE);
-	return readSerial(conn, buf, len);
+	size_t read = 0;
+	while (read < len) {
+		read += readSerial(conn, buf + read, len - read);
+	}
+	return read;
 }
 
 /**
