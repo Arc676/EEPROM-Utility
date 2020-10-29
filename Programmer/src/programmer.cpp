@@ -85,8 +85,12 @@ int main() {
 				ImGui::InputText("##Device", device, 200, flags);
 				ImGui::Text("Baud rate");
 				ImGui::SameLine();
-				ImGui::InputInt("##Freq", &(sc->freq));
+
+				static int selectedFreq = INDEX_9600;
+				ImGui::Combo("##Freq", &selectedFreq, baudRates_s, NO_BAUD_RATES);
+				sc->freq = baudRates_i[selectedFreq];
 				ImGui::SameLine();
+
 				if (!connected && ImGui::Button("Connect")) {
 					connected = setupSerial(sc, device);
 				} else if (connected && ImGui::Button("Disconnect")) {
@@ -119,6 +123,8 @@ int main() {
 							} else if (ImGui::Button("7 Segment Decoder (0-9)")) {
 							} else if (ImGui::Button("Erase EEPROM (fill buffer with zeros)")) {
 								memset(data, 0, bufferSize);
+							} else if (ImGui::Button("Erase EEPROM (fill buffer with ones)")) {
+								memset(data, 0xFF, bufferSize);
 							}
 						} else {
 							ImGui::Text("(Can't write to given address)");
