@@ -23,7 +23,7 @@
 #define READ 0x00
 #define WRITE 0xFF
 
-#define CMDSIZE 1 + 2 * sizeof(size_t)
+#define CMDSIZE 1 + 2 * sizeof(uint32_t)
 
 /**
  * Reads data from the EEPROM chip
@@ -33,11 +33,11 @@
  * @param offset Starting address from which to read
  * @return Number of bytes received from serial port
  */
-size_t readEEPROM(SerialConnection* conn, unsigned char* buf, size_t len, size_t offset) {
+size_t readEEPROM(SerialConnection* conn, unsigned char* buf, uint32_t len, uint32_t offset) {
 	unsigned char cmd[CMDSIZE];
 	cmd[0] = READ;
-	memcpy(cmd + 1, &len, sizeof(size_t));
-	memcpy(cmd + 1 + sizeof(size_t), &offset, sizeof(size_t));
+	memcpy(cmd + 1, &len, sizeof(uint32_t));
+	memcpy(cmd + 1 + sizeof(uint32_t), &offset, sizeof(uint32_t));
 	writeSerial(conn, cmd, CMDSIZE);
 	return readSerial(conn, buf, len);
 }
@@ -50,11 +50,11 @@ size_t readEEPROM(SerialConnection* conn, unsigned char* buf, size_t len, size_t
  * @param offset Starting address from which to write
  * @return Number of bytes written to serial port
  */
-size_t writeEEPROM(SerialConnection* conn, unsigned char* buf, size_t len, size_t offset) {
+size_t writeEEPROM(SerialConnection* conn, unsigned char* buf, uint32_t len, uint32_t offset) {
 	unsigned char cmd[CMDSIZE];
 	cmd[0] = WRITE;
-	memcpy(cmd + 1, &len, sizeof(size_t));
-	memcpy(cmd + 1 + sizeof(size_t), &offset, sizeof(size_t));
+	memcpy(cmd + 1, &len, sizeof(uint32_t));
+	memcpy(cmd + 1 + sizeof(uint32_t), &offset, sizeof(uint32_t));
 	writeSerial(conn, cmd, CMDSIZE);
 	return writeSerial(conn, buf, len);
 }

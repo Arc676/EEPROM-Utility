@@ -43,7 +43,7 @@ void setAddress(int address, bool output) {
 	digitalWrite(ADDRESS_LATCH, LOW);
 }
 
-void writeEEPROM(byte* data, size_t length, size_t offset) {
+void writeEEPROM(byte* data, uint32_t length, uint32_t offset) {
 	digitalWrite(WRITE_STATUS, HIGH);
 
 	if (!outputMode) {
@@ -69,7 +69,7 @@ void writeEEPROM(byte* data, size_t length, size_t offset) {
 	digitalWrite(WRITE_STATUS, LOW);
 }
 
-void readEEPROM(byte* dst, size_t length, size_t offset) {
+void readEEPROM(byte* dst, uint32_t length, uint32_t offset) {
 	digitalWrite(READ_STATUS, HIGH);
 
 	if (outputMode) {
@@ -93,11 +93,11 @@ void readEEPROM(byte* dst, size_t length, size_t offset) {
 
 void loop() {
 	byte command;
-	size_t length, offset;
+	uint32_t length, offset;
 	if (Serial.available() > 0) {
 		Serial.readBytes(&command, 1);
-		Serial.readBytes((byte*)&length, sizeof(size_t));
-		Serial.readBytes((byte*)&offset, sizeof(size_t));
+		Serial.readBytes((byte*)&length, sizeof(uint32_t));
+		Serial.readBytes((byte*)&offset, sizeof(uint32_t));
 		byte* data = (byte*)malloc(length);
 		if (command == READ) {
 			readEEPROM(data, length, offset);
