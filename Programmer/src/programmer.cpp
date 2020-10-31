@@ -119,12 +119,69 @@ int main() {
 						ImGui::SameLine();
 						ImGui::InputInt("##Address", &address);
 						if (address >= 0) {
-							if (ImGui::Button("7 Segment Decoder (0-F)")) {
-							} else if (ImGui::Button("7 Segment Decoder (0-9)")) {
+							static int bytesNeeded = 0;
+							if (ImGui::Button("Common Anode 7 Segment Decoder (0-F)")) {
+								if (address + 16 <= bufferSize) {
+									memcpy(data + address, commonAnode, 16);
+								} else {
+									bytesNeeded = 16;
+								}
+							} else if (ImGui::Button("Common Anode 7 Segment Decoder (0-9)")) {
+								if (address + 10 <= bufferSize) {
+									memcpy(data + address, commonAnode, 10);
+								} else {
+									bytesNeeded = 10;
+								}
+							} else if (ImGui::Button("Common Cathode 7 Segment Decoder (0-F)")) {
+								if (address + 16 <= bufferSize) {
+									memcpy(data + address, commonCathode, 16);
+								} else {
+									bytesNeeded = 16;
+								}
+							} else if (ImGui::Button("Common Cathode 7 Segment Decoder (0-9)")) {
+								if (address + 10 <= bufferSize) {
+									memcpy(data + address, commonCathode, 10);
+								} else {
+									bytesNeeded = 10;
+								}
+							} else if (ImGui::Button("Common Cathode 2-Digit Preset")) {
+								if (address + 1024 <= bufferSize) {
+									unsigned char* start = data + address;
+									for (int i = 0; i < 16; i++) {
+										memset(start + i * 16, commonCathode[i], 16);
+										memcpy(start + 256 + i * 16, commonCathode, 16);
+									}
+									for (int i = -128; i < 128; i++) {
+										unsigned char uc = (unsigned char)i;
+										unsigned char sign = i < 0 ? 0x80 : 0x00;
+										int abs = i < 0 ? -i : i;
+
+										unsigned char sixteens = commonCathode[abs / 16];
+										start[uc + 512] = sixteens | sign;
+
+										unsigned char units = commonCathode[abs % 16];
+										start[uc + 768] = units | sign;
+									}
+								} else {
+									bytesNeeded = 1024;
+								}
 							} else if (ImGui::Button("Erase EEPROM (fill buffer with zeros)")) {
 								memset(data, 0, bufferSize);
 							} else if (ImGui::Button("Erase EEPROM (fill buffer with ones)")) {
 								memset(data, 0xFF, bufferSize);
+							}
+							static char buf[150];
+							if (bytesNeeded != 0) {
+								ImGui::OpenPopup("insufficientSpace");
+								sprintf(buf,
+									"Error: This data needs %d bytes from the starting address but only %d are available. Maybe enlarge the buffer?",
+									bytesNeeded,
+									bufferSize - address);
+								bytesNeeded = 0;
+							}
+							if (ImGui::BeginPopup("insufficientSpace")) {
+								ImGui::Text(buf);
+								ImGui::EndPopup();
 							}
 						} else {
 							ImGui::Text("(Can't write to given address)");
